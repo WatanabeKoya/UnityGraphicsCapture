@@ -186,8 +186,8 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "com.watanabe.io-github-ruccho-graphicscapture": {
-      "version": "file:com.watanabe.io-github-ruccho-graphicscapture",
+    "com.watanabe-koya.graphicscapture": {
+      "version": "file:com.watanabe-koya.graphicscapture",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
