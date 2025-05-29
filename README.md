@@ -14,7 +14,7 @@ This package is provided as UPM package.
 
 1. Open Package Manager window.
 2. Click `+` > `Add package from git URL...`
-3. Enter `https://github.com/ruccho/UnityGraphicsCapture.git?path=/UnityGraphicsCapture/Packages/io.github.ruccho.graphicscapture`
+3. Enter `https://github.com/WatanabeKoya/UnityGraphicsCapture.git?path=/UnityGraphicsCapture/Packages/com.watanabe-koya.graphicscapture`
 
 ### `CaptureTexture` component
 `CaptureTexture` (in namespace `Ruccho.GraphicsCapture`) is a component that get window/monitor texture and set it to a renderer. You can try it by attaching `CaptureTexture` to primitive objects with renderer such as Quad. During playing, capture target can be chosen from inspector of `CaptureTexture`.
