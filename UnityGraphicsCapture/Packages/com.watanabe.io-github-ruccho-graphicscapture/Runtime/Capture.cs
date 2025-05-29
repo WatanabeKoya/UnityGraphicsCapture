@@ -1,40 +1,18 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using Ruccho.GraphicsCapture.Native;
 using UnityEngine;
 
 namespace Ruccho.GraphicsCapture
 {
     public class Capture : IDisposable
     {
-        [DllImport("GraphicsCapture")]
-        private static extern IntPtr CreateCaptureFromWindow(IntPtr hWnd);
-        
-        [DllImport("GraphicsCapture")]
-        private static extern IntPtr CreateCaptureFromMonitor(IntPtr hMon);
-
-        [DllImport("GraphicsCapture")]
-        private static extern void StartCapture(IntPtr capture);
-
-        [DllImport("GraphicsCapture")]
-        private static extern void CloseCapture(IntPtr capture);
-
-        [DllImport("GraphicsCapture")]
-        private static extern int GetWidth(IntPtr capture);
-
-        [DllImport("GraphicsCapture")]
-        private static extern int GetHeight(IntPtr capture);
-
-        [DllImport("GraphicsCapture")]
-        private static extern IntPtr GetTexturePtr(IntPtr capture);
 
         private IntPtr SelfPtr { get; } = IntPtr.Zero;
 
         private int prevWidth = -1;
         private int prevHeight = -1;
         private IntPtr prevPtr = IntPtr.Zero;
-        
+
         private Texture2D CurrentTexture { get; set; }
 
         public bool IsCapturing { get; private set; }
@@ -46,10 +24,10 @@ namespace Ruccho.GraphicsCapture
             switch(target.TargetType)
             {
                 case CaptureTargetType.Window:
-                    SelfPtr = CreateCaptureFromWindow(target.Handle);
+                    SelfPtr = NativeCapture.CreateCaptureFromWindow(target.Handle);
                     break;
                 case CaptureTargetType.Monitor:
-                    SelfPtr = CreateCaptureFromMonitor(target.Handle);
+                    SelfPtr = NativeCapture.CreateCaptureFromMonitor(target.Handle);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -64,17 +42,17 @@ namespace Ruccho.GraphicsCapture
         {
             if(IsDisposed) throw new ObjectDisposedException(nameof(Capture));
             if(IsCapturing) throw new InvalidOperationException();
-            StartCapture(SelfPtr);
+            NativeCapture.StartCapture(SelfPtr);
             IsCapturing = true;
         }
 
         public Texture2D GetTexture()
         {
             if (!IsCapturing || IsDisposed) return null;
-            
-            int width = GetWidth(SelfPtr);
-            int height = GetHeight(SelfPtr);
-            IntPtr tex = GetTexturePtr(SelfPtr);
+
+            int width = NativeCapture.GetWidth(SelfPtr);
+            int height = NativeCapture.GetHeight(SelfPtr);
+            IntPtr tex = NativeCapture.GetTexturePtr(SelfPtr);
 
             if (width <= 0 || height <= 0 || tex == IntPtr.Zero) return null;
 
@@ -91,12 +69,12 @@ namespace Ruccho.GraphicsCapture
                 {
                     CurrentTexture.UpdateExternalTexture(tex);
                 }
-                
+
                 prevWidth = width;
                 prevHeight = height;
                 prevPtr = tex;
             }
-            
+
             return CurrentTexture;
         }
 
@@ -104,12 +82,12 @@ namespace Ruccho.GraphicsCapture
         {
             if (IsDisposed) return;
             IsDisposed = true;
-            
+
             if (SelfPtr != IntPtr.Zero)
-                CloseCapture(SelfPtr);
+                NativeCapture.CloseCapture(SelfPtr);
             IsCapturing = false;
         }
-        
+
         #if UNITY_EDITOR
 
         ~Capture()
@@ -117,7 +95,7 @@ namespace Ruccho.GraphicsCapture
             if (IsDisposed || SelfPtr == IntPtr.Zero) return;
             Debug.LogWarning("[GraphicsCapture] A capture object has not been disposed! Make sure capture object to be disposed to stop unexpected capturing.");
         }
-        
+
         #endif
     }
 }
