@@ -187,7 +187,7 @@
       }
     },
     "com.watanabe-koya.graphicscapture": {
-      "version": "file:com.watanabe.io-github-ruccho-graphicscapture",
+      "version": "file:com.watanabe-koya.graphicscapture",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
