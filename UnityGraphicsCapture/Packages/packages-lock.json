@@ -186,7 +186,7 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "io.github.ruccho.graphicscapture": {
+    "com.watanabe.io-github-ruccho-graphicscapture": {
       "version": "file:io.github.ruccho.graphicscapture",
       "depth": 0,
       "source": "embedded",
