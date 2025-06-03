@@ -61,8 +61,9 @@ namespace Ruccho.GraphicsCapture
 
                 if (CurrentTexture == null || width != prevWidth || height != prevHeight)
                 {
+                    var isLinear = QualitySettings.activeColorSpace == ColorSpace.Linear;
                     CurrentTexture =
-                        Texture2D.CreateExternalTexture(width, height, TextureFormat.BGRA32, false, false, tex);
+                        Texture2D.CreateExternalTexture(width, height, TextureFormat.BGRA32, false, isLinear, tex);
                     CurrentTexture.filterMode = FilterMode.Bilinear;
                 }
                 else

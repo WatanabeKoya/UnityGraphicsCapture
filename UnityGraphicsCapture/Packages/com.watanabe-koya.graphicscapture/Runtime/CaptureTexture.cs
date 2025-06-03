@@ -9,7 +9,7 @@ namespace Ruccho.GraphicsCapture
     public class CaptureTexture : MonoBehaviour
     {
         public ICaptureTarget CurrentTarget => client.CurrentTarget;
-        
+
         private CaptureClient client = new CaptureClient();
         private Renderer targetRenderer = default;
 
@@ -19,7 +19,7 @@ namespace Ruccho.GraphicsCapture
             {
                 client.SetTarget(target);
             }
-            catch (CreateCaptureException e)
+            catch (CreateCaptureException)
             {
                 Debug.LogWarning("This target cannot be captured!");
             }
