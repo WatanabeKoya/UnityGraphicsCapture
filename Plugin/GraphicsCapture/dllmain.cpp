@@ -11,6 +11,7 @@ namespace winrt
 	using namespace Windows::Graphics::Capture;
 }
 
+using namespace Microsoft::WRL;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -31,7 +32,8 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 namespace
 {
-	IUnityInterfaces* g_unity = nullptr;
+	winrt::com_ptr<ID3D11Device> g_unityDevice = nullptr;
+	ComPtr<ID3D11DeviceContext> g_unityContext = nullptr;
 	winrt::impl::com_ref<winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice> g_device = nullptr;
 
 	auto CreateCaptureItemForWindow(HWND hwnd)
@@ -54,7 +56,7 @@ namespace
 	{
 		auto pixelFormat = winrt::Windows::Graphics::DirectX::DirectXPixelFormat::B8G8R8A8UIntNormalized;
 
-		auto capture = new Capture(g_device, item, pixelFormat);
+		auto capture = new Capture(g_device, item, pixelFormat, g_unityDevice, g_unityContext);
 
 		return capture;
 	}
@@ -66,14 +68,12 @@ extern "C"
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
 	{
-		g_unity = unityInterfaces;
-		ID3D11Device* unityDevice = g_unity->Get<IUnityGraphicsD3D11>()->GetDevice();
+		auto unityDevice = unityInterfaces->Get<IUnityGraphicsD3D11>()->GetDevice();
+		g_unityDevice.attach(unityDevice);
 
-		winrt::com_ptr<ID3D11Device> unityDevicePtr;
-		unityDevicePtr.attach(unityDevice);
-
-		auto dxgiDevice = unityDevicePtr.as<IDXGIDevice>();
+		auto dxgiDevice = g_unityDevice.as<IDXGIDevice>();
 		g_device = CreateDirect3DDevice(dxgiDevice.get());
+		unityDevice->GetImmediateContext(&g_unityContext);
 	}
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API UnityPluginUnload()
@@ -102,7 +102,7 @@ extern "C"
 			auto item = CreateCaptureItemForWindow(hWnd);
 			return CreateCapture(item);
 		}
-		catch (winrt::hresult_error const& ex)
+		catch (winrt::hresult_error)
 		{
 			return nullptr;
 		}
@@ -126,7 +126,7 @@ extern "C"
 			auto item = CreateCaptureItemForMonitor(hMon);
 			return CreateCapture(item);
 		}
-		catch (winrt::hresult_error const& ex)
+		catch (winrt::hresult_error)
 		{
 			return nullptr;
 		}
@@ -157,10 +157,10 @@ extern "C"
 		return capture->GetHeight();
 	}
 
-	UNITY_INTERFACE_EXPORT void* UNITY_INTERFACE_API GetTexturePtr(void* capturePtr)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API Render(void* capturePtr, void* renderTexturePtr)
 	{
 		auto capture = reinterpret_cast<Capture*>(capturePtr);
-		return capture->GetTexturePtr();
+		auto renderTexture = reinterpret_cast<ID3D11Texture2D*>(renderTexturePtr);
+		capture->Render(renderTexture);
 	}
-
 }
