@@ -25,7 +25,7 @@ namespace Ruccho.GraphicsCapture.Native
         public static extern int GetHeight(IntPtr capture);
 
         [DllImport("GraphicsCapture")]
-        public static extern IntPtr GetTexturePtr(IntPtr capture);
+        public static extern void Render(IntPtr capture, IntPtr renderTexture);
     }
     #endif
 }

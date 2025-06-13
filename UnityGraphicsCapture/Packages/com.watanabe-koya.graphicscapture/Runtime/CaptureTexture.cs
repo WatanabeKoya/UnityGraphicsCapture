@@ -18,6 +18,9 @@ namespace Ruccho.GraphicsCapture
             try
             {
                 client.SetTarget(target);
+                if (!targetRenderer) targetRenderer = GetComponent<Renderer>();
+                if (!targetRenderer || !targetRenderer.material) return;
+                targetRenderer.material.mainTexture = client.GetTexture();
             }
             catch (CreateCaptureException)
             {
@@ -27,13 +30,7 @@ namespace Ruccho.GraphicsCapture
 
         private void Update()
         {
-            if (!targetRenderer) targetRenderer = GetComponent<Renderer>();
-            if (!targetRenderer || !targetRenderer.material) return;
-
-            var tex = client.GetTexture();
-            var currentTex = targetRenderer.material.mainTexture;
-            if (currentTex != tex)
-                targetRenderer.material.mainTexture = tex;
+            client?.Render();
         }
 
         private void OnDestroy()
