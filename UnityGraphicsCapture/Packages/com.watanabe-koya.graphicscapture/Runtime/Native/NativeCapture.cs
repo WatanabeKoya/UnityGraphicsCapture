@@ -4,53 +4,22 @@ namespace Ruccho.GraphicsCapture.Native
 {
     public static class NativeCapture
     {
-        public static IntPtr CreateCaptureFromWindow(IntPtr hWnd) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.CreateCaptureFromWindow(hWnd);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static IntPtr CreateCaptureFromMonitor(IntPtr hMon) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.CreateCaptureFromMonitor(hMon);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static void StartCapture(IntPtr capture) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.StartCapture(capture);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static void CloseCapture(IntPtr capture) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.CloseCapture(capture);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static int GetWidth(IntPtr capture) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.GetWidth(capture);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static int GetHeight(IntPtr capture) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.GetHeight(capture);
-        #else
-            throw new NotImplementedException();
-        #endif
-
-        public static IntPtr GetTexturePtr(IntPtr capture) =>
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-            WindowsCapture.GetTexturePtr(capture);
-        #else
-            throw new NotImplementedException();
-        #endif
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        public static IntPtr CreateCaptureFromWindow(IntPtr hWnd) => WindowsCapture.CreateCaptureFromWindow(hWnd);
+        public static IntPtr CreateCaptureFromMonitor(IntPtr hMon) => WindowsCapture.CreateCaptureFromMonitor(hMon);
+        public static void StartCapture(IntPtr capture) => WindowsCapture.StartCapture(capture);
+        public static void CloseCapture(IntPtr capture) => WindowsCapture.CloseCapture(capture);
+        public static int GetWidth(IntPtr capture) => WindowsCapture.GetWidth(capture);
+        public static int GetHeight(IntPtr capture) => WindowsCapture.GetHeight(capture);
+        public static void Render(IntPtr capture, IntPtr renderTexture) => WindowsCapture.Render(capture, renderTexture);
+#else
+        public static IntPtr CreateCaptureFromWindow(IntPtr hWnd) => throw new NotImplementedException();
+        public static IntPtr CreateCaptureFromMonitor(IntPtr hMon) => throw new NotImplementedException();
+        public static void StartCapture(IntPtr capture) => throw new NotImplementedException();
+        public static void CloseCapture(IntPtr capture) => throw new NotImplementedException();
+        public static int GetWidth(IntPtr capture) => throw new NotImplementedException();
+        public static int GetHeight(IntPtr capture) => throw new NotImplementedException();
+        public static void Render(IntPtr capture, IntPtr renderTexture) => throw new NotImplementedException();
+#endif
     }
 }

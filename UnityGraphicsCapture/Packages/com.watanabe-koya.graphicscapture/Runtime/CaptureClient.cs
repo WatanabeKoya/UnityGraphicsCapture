@@ -11,7 +11,8 @@ namespace Ruccho.GraphicsCapture
 
         public ICaptureTarget CurrentTarget { get; private set; }
 
-        public Texture2D GetTexture() => CurrentCapture?.GetTexture();
+        public RenderTexture GetTexture() => CurrentCapture?.Texture;
+        public void Render() => CurrentCapture?.Render();
 
         private bool IsDisposed { get; set; } = false;
 

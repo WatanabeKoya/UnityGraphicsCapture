@@ -7,14 +7,13 @@ namespace Ruccho.GraphicsCapture
     public class Capture : IDisposable
     {
 
-        private IntPtr SelfPtr { get; } = IntPtr.Zero;
+        private IntPtr SelfPtr { get; }
+        private IntPtr texturePtr = IntPtr.Zero;
 
         private int prevWidth = -1;
         private int prevHeight = -1;
-        private IntPtr prevPtr = IntPtr.Zero;
 
-        private Texture2D CurrentTexture { get; set; }
-
+        public RenderTexture Texture { get; }
         public bool IsCapturing { get; private set; }
 
         private bool IsDisposed { get; set; }
@@ -36,6 +35,8 @@ namespace Ruccho.GraphicsCapture
             {
                 throw new CreateCaptureException("CreateCapture() returned null. Failed to create Capturing instance.");
             }
+            Texture = new RenderTexture(NativeCapture.GetWidth(SelfPtr), NativeCapture.GetHeight(SelfPtr), 0, RenderTextureFormat.BGRA32);
+            Texture.Create();
         }
 
         public void Start()
@@ -46,37 +47,22 @@ namespace Ruccho.GraphicsCapture
             IsCapturing = true;
         }
 
-        public Texture2D GetTexture()
+        public void Render()
         {
-            if (!IsCapturing || IsDisposed) return null;
-
-            int width = NativeCapture.GetWidth(SelfPtr);
-            int height = NativeCapture.GetHeight(SelfPtr);
-            IntPtr tex = NativeCapture.GetTexturePtr(SelfPtr);
-
-            if (width <= 0 || height <= 0 || tex == IntPtr.Zero) return null;
-
-            if(prevPtr != tex)
+            if (!IsCapturing || IsDisposed) return;
+            var width = NativeCapture.GetWidth(SelfPtr);
+            var height = NativeCapture.GetHeight(SelfPtr);
+            if (width != prevWidth || height != prevHeight)
             {
-
-                if (CurrentTexture == null || width != prevWidth || height != prevHeight)
-                {
-                    var isLinear = QualitySettings.activeColorSpace == ColorSpace.Linear;
-                    CurrentTexture =
-                        Texture2D.CreateExternalTexture(width, height, TextureFormat.BGRA32, false, isLinear, tex);
-                    CurrentTexture.filterMode = FilterMode.Bilinear;
-                }
-                else
-                {
-                    CurrentTexture.UpdateExternalTexture(tex);
-                }
-
+                Texture.Release();
+                Texture.width = width;
+                Texture.height = height;
+                Texture.Create();
+                texturePtr = Texture.GetNativeTexturePtr();
                 prevWidth = width;
                 prevHeight = height;
-                prevPtr = tex;
             }
-
-            return CurrentTexture;
+            NativeCapture.Render(SelfPtr, texturePtr);
         }
 
         public void Dispose()

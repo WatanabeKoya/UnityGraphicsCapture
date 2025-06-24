@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class CaptureSample : MonoBehaviour
 {
     [SerializeField]
-    private RawImage previewImage = default; 
+    private RawImage previewImage = default;
 
     private Capture capture = default;
 
@@ -17,16 +17,13 @@ public class CaptureSample : MonoBehaviour
         var target = targets.First();
         Debug.Log(target.Description);
         capture = new Capture(target);
+        previewImage.texture = capture.Texture;
         capture.Start();
     }
 
     private void Update()
     {
-        if(capture != null)
-        {
-            //Call GetTexture() every frame to update Unity's texture from native texture.
-            previewImage.texture = capture.GetTexture();
-        }
+        capture?.Render();
     }
 
     private void OnDestroy()

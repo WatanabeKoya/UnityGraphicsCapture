@@ -35,6 +35,7 @@ public class CaptureClientSample : MonoBehaviour
         try
         {
             client.SetTarget(listedTargets.ElementAt(index));
+            previewImage.texture = client.GetTexture();
         }
         catch (CreateCaptureException e)
         {
@@ -44,10 +45,7 @@ public class CaptureClientSample : MonoBehaviour
 
     void Update()
     {
-        if (client != null)
-        {
-            previewImage.texture = client.GetTexture();
-        }
+        client?.Render();
     }
 
     private void OnDestroy()
