@@ -70,8 +70,13 @@ void Capture::CreateBufferTexture()
 	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	desc.SampleDesc.Count = 1;
 	desc.Usage = D3D11_USAGE_DEFAULT;
+	
+	D3D11_SUBRESOURCE_DATA initData = {};
+	std::vector<UINT32> initColor(desc.Width * desc.Height, 0xFFFFFFFF);
+	initData.pSysMem = initColor.data();
+	initData.SysMemPitch = desc.Width * sizeof(UINT32);
 
-	m_bufferDevice->CreateTexture2D(&desc, nullptr, &m_bufferTexture);
+	m_bufferDevice->CreateTexture2D(&desc, &initData, &m_bufferTexture);
 }
 
 void Capture::StartCapture()
