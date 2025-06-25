@@ -47,6 +47,7 @@ namespace Ruccho.GraphicsCapture
         [DllImport("user32.dll", ExactSpelling = true)]
         private static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestorFlags flags);
 
+        private static readonly int WS_CAPTION = 0x00C00000;
         private static readonly int WS_DISABLED = 0x8000000;
         private static readonly int WS_VISIBLE = 0x10000000;
         private static readonly int WS_EX_TOOLWINDOW = 0x00000080;
@@ -128,12 +129,11 @@ namespace Ruccho.GraphicsCapture
 
         public bool IsCapturable()
         {
-            UpdateWindowTitle();
-            UpdateWindowInfo();
-
-            if (string.IsNullOrEmpty(Title)) return false;
+            if (!UpdateWindowTitle()) return false;
+            if (!UpdateWindowInfo()) return false;
             if (Handle == GetShellWindow()) return false;
             if (!IsWindowVisible(Handle)) return false;
+            if ((Info.dwStyle & WS_CAPTION) == 0) return false;
             if ((Info.dwStyle & WS_DISABLED) != 0) return false;
             if ((Info.dwStyle & WS_VISIBLE) == 0) return false;
             if ((Info.dwExStyle & WS_EX_TOOLWINDOW) != 0) return false;

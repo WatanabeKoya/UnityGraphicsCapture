@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using AOT;
-using UnityEngine;
 
 namespace Ruccho.GraphicsCapture
 {
@@ -34,40 +32,16 @@ namespace Ruccho.GraphicsCapture
 
         public static IEnumerable<WindowInfo> GetTopWindows(bool includeNonCapturableWindows = false)
         {
-            //var windows = new List<WindowInfo>();
-            var allWindows = EnumWindows().Select(hWnd => new WindowInfo(hWnd));
-
-            if (includeNonCapturableWindows) return allWindows;
-            return allWindows.Where(w => w.IsCapturable());
-        }
-        
-        private static bool isEnumeratingWindows = false;
-        private static readonly List<IntPtr> enumeratedWindows = new List<IntPtr>();
-
-        private static IEnumerable<IntPtr> EnumWindows()
-        {
-            if(isEnumeratingWindows) throw new InvalidOperationException("Only one EnumWindows() can be called at the same time.");
-            isEnumeratingWindows = true;
-            
-            enumeratedWindows.Clear();
-            
-            try
+            var windowHandles = new List<IntPtr>();
+            EnumWindows((hWnd, _) =>
             {
-                EnumWindows(EnumWindowsCallback, IntPtr.Zero);
-            }
-            finally
-            {
-                isEnumeratingWindows = false;
-            }
+                windowHandles.Add(hWnd);
+                return true;
+            }, IntPtr.Zero);
 
-            return enumeratedWindows.ToArray();
-        }
-        
-        [MonoPInvokeCallback(typeof(EnumWindowsDelegate))]
-        private static bool EnumWindowsCallback(IntPtr hwnd, IntPtr lparam)
-        {
-            enumeratedWindows.Add(hwnd);
-            return true;
+            return windowHandles
+                .Select(hWnd => new WindowInfo(hWnd))
+                .Where(windowInfo => includeNonCapturableWindows || windowInfo.IsCapturable());
         }
 
         public static IEnumerable<MonitorInfo> GetMonitors()
