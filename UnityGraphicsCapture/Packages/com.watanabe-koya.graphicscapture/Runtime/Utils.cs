@@ -8,11 +8,11 @@ namespace Ruccho.GraphicsCapture
 {
     public static class Utils
     {
-        private delegate bool EnumWindowsDelegate(IntPtr hWnd, IntPtr lparam);
+        private delegate bool EnumWindowsDelegate(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool EnumWindows(EnumWindowsDelegate lpEnumFunc, IntPtr lparam);
+        private static extern bool EnumWindows(EnumWindowsDelegate lpEnumFunc, IntPtr lParam);
 
         delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
@@ -33,48 +33,62 @@ namespace Ruccho.GraphicsCapture
         public static IEnumerable<WindowInfo> GetTopWindows(bool includeNonCapturableWindows = false)
         {
             var windowHandles = new List<IntPtr>();
-            EnumWindows((hWnd, _) =>
+            var handle = GCHandle.Alloc(windowHandles);
+            try
             {
-                windowHandles.Add(hWnd);
-                return true;
-            }, IntPtr.Zero);
+                EnumWindows(EnumWindowsCallback, GCHandle.ToIntPtr(handle));
+            }
+            finally
+            {
+                handle.Free();
+            }
 
             return windowHandles
                 .Select(hWnd => new WindowInfo(hWnd))
                 .Where(windowInfo => includeNonCapturableWindows || windowInfo.IsCapturable());
         }
 
+        [MonoPInvokeCallback(typeof(EnumMonitorsDelegate))]
+        private static bool EnumWindowsCallback(IntPtr hWnd, IntPtr lParam)
+        {
+            var handle = GCHandle.FromIntPtr(lParam);
+            if (handle.Target is List<IntPtr> list)
+            {
+                list.Add(hWnd);
+            }
+            return true;
+        }
+
         public static IEnumerable<MonitorInfo> GetMonitors()
         {
             return EnumDisplayMonitors().Select(monitor => new MonitorInfo(monitor));
         }
-        
-        private static bool isEnumeratingMonitors = false;
-        private static readonly List<IntPtr> enumeratedMonitors = new List<IntPtr>();
-        
+
         private static IEnumerable<IntPtr> EnumDisplayMonitors()
         {
-            if(isEnumeratingMonitors) throw new InvalidOperationException("Only one EnumDisplayMonitors() can be called at the same time.");
-            isEnumeratingMonitors = true;
-            
-            enumeratedMonitors.Clear();
-            
+            var monitors = new List<IntPtr>();
+            var handle = GCHandle.Alloc(monitors);
+
             try
             {
-                EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, EnumDisplayMonitorsCallback, IntPtr.Zero);
+                EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, EnumDisplayMonitorsCallback, GCHandle.ToIntPtr(handle));
             }
             finally
             {
-                isEnumeratingMonitors = false;
+                handle.Free();
             }
 
-            return enumeratedMonitors.ToArray();
+            return monitors;
         }
-        
+
         [MonoPInvokeCallback(typeof(EnumMonitorsDelegate))]
-        private static bool EnumDisplayMonitorsCallback(IntPtr monitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr data)
+        private static bool EnumDisplayMonitorsCallback(IntPtr monitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
         {
-            enumeratedMonitors.Add(monitor);
+            var handle = GCHandle.FromIntPtr(dwData);
+            if (handle.Target is List<IntPtr> list)
+            {
+                list.Add(monitor);
+            }
             return true;
         }
     }
