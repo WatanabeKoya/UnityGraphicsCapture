@@ -34,6 +34,9 @@ namespace Ruccho.GraphicsCapture
         [DllImport("user32.dll")]
         private static extern IntPtr GetLastActivePopup(IntPtr hWnd);
         
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmGetWindowAttribute(IntPtr hWnd, uint dwAttribute, out int pvAttribute, int cbAttribute);
+        
         enum GetAncestorFlags
         {
             // Retrieves the parent window. This does not include the owner, as it does with the GetParent function.
@@ -47,10 +50,10 @@ namespace Ruccho.GraphicsCapture
         [DllImport("user32.dll", ExactSpelling = true)]
         private static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestorFlags flags);
 
-        private static readonly int WS_CAPTION = 0x00C00000;
-        private static readonly int WS_DISABLED = 0x8000000;
-        private static readonly int WS_VISIBLE = 0x10000000;
-        private static readonly int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int WS_DISABLED = 0x8000000;
+        private const int WS_VISIBLE = 0x10000000;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const uint DWMWA_CLOAKED = 14;
 
         private static WINDOWINFO GetWindowInfo(IntPtr hWnd, out int retCode)
         {
@@ -133,7 +136,6 @@ namespace Ruccho.GraphicsCapture
             if (!UpdateWindowInfo()) return false;
             if (Handle == GetShellWindow()) return false;
             if (!IsWindowVisible(Handle)) return false;
-            if ((Info.dwStyle & WS_CAPTION) == 0) return false;
             if ((Info.dwStyle & WS_DISABLED) != 0) return false;
             if ((Info.dwStyle & WS_VISIBLE) == 0) return false;
             if ((Info.dwExStyle & WS_EX_TOOLWINDOW) != 0) return false;
@@ -142,7 +144,10 @@ namespace Ruccho.GraphicsCapture
             var rootOwner = GetAncestor(Handle, GetAncestorFlags.GetRootOwner);
             var last = GetLastVisibleActivePopUpOfWindow(rootOwner);
             if (last != Handle) return false;
-
+            
+            DwmGetWindowAttribute(Handle, DWMWA_CLOAKED, out int dwAttribute, Marshal.SizeOf(typeof(int)));
+            if (dwAttribute > 0) return false;
+            
             return true;
         }
     }
