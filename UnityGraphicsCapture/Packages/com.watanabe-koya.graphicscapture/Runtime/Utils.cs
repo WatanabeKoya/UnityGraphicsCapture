@@ -48,7 +48,7 @@ namespace Ruccho.GraphicsCapture
                 .Where(windowInfo => includeNonCapturableWindows || windowInfo.IsCapturable());
         }
 
-        [MonoPInvokeCallback(typeof(EnumMonitorsDelegate))]
+        [MonoPInvokeCallback(typeof(EnumWindowsDelegate))]
         private static bool EnumWindowsCallback(IntPtr hWnd, IntPtr lParam)
         {
             var handle = GCHandle.FromIntPtr(lParam);
